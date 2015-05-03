@@ -1,6 +1,7 @@
 package com.buzzfactory.lw
 
-import java.sql.Date
+import java.sql.Timestamp
+
 import scala.slick.driver.PostgresDriver.simple._
 import scala.slick.lifted.{ProvenShape, ForeignKeyQuery}
 
@@ -10,7 +11,7 @@ import scala.slick.lifted.{ProvenShape, ForeignKeyQuery}
 
 class Games(tag: Tag) extends Table[Game](tag, "GAMES") {
   def id = column[Int]("ID", O.PrimaryKey)
-  def doc = column[Date]("DOC", O.NotNull)
+  def doc = column[Timestamp]("DOC", O.NotNull)
   def state = column[String]("STATE", O.NotNull)
 
   def * = (id, doc, state) <> (Game.tupled, Game.unapply)

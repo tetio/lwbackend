@@ -41,9 +41,9 @@ trait MyService extends HttpService {
 
   lazy val gameRoute =
     getJson {
-      path("game" / IntNumber) { index =>
+      path("game" / "all" ) {
         complete {
-          GameHandler.findById(index)
+          GameHandler.findAllGames()
         }
       }
     } ~
