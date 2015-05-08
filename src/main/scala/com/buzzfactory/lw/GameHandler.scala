@@ -5,8 +5,10 @@ package com.buzzfactory.lw
 import org.json4s.ShortTypeHints
 import org.json4s.native.Serialization
 import org.json4s.native.Serialization._
-
 import scala.slick.driver.PostgresDriver.simple._
+import java.sql.Timestamp
+
+import scala.util.Random
 
 /**
  * Created by tetio on 30/04/15.
@@ -21,21 +23,37 @@ object GameHandler {
   val player: TableQuery[Players] = TableQuery[Players]
   val round: TableQuery[Rounds] = TableQuery[Rounds]
   val usedWord: TableQuery[UsedWords] = TableQuery[UsedWords]
+  val word16: TableQuery[Words16] = TableQuery[Words16]
 
   def createDB = 1 //(games.ddl ++ players.ddl ++ rounds.ddl ++ usedWords.ddl).create
+
+  def newGame() = {
+    db.withSession { implicit session =>
+      val countQuery = word16.length.run
+      val skip = Random.nextInt(countQuery)
+      val word = word16.drop(skip).take(1).run.head
+      var myGame = Game(1, new Timestamp(System.currentTimeMillis()), "OPEN", Nil, Nil)
+      val res = game.insert(myGame)
+      s"{res: $res}"
+    }
+  }
+
 
   def findAllGames(): String = {
     db.withSession { implicit session =>
       val games: Query[Games, Game, Seq] = game.filter(_.id > 0)
-      writePretty(games.list)
+      val list = games.list
+      writePretty(list)
     }
   }
 
-  def findUsedWords(id: Int): String = {
+  def findById(id: Int): String = {
     db.withSession { implicit session =>
+      val gameQuery = game.filter(_.id === id)
       val usedWordsQuery: Query[UsedWords, UsedWord, Seq] = usedWord.filter(_.gameId === id)
-      val words = usedWordsQuery.run
-      writePretty(words.map(_.word))
+      val myGame = gameQuery.run.head
+      val megaGame = Game(myGame.id, myGame.doc, myGame.state, Nil, usedWordsQuery.run.map(_.word))
+      writePretty(megaGame )
     }
   }
 
@@ -46,6 +64,16 @@ object GameHandler {
       val gamesQuery: Query[Games, Game, Seq] = usedWordsQuery.flatMap(_.game)
       val games: Seq[Game] = gamesQuery.run
       writePretty(games)
+    }
+  }
+
+  def findAll2(): String = {
+    db.withSession { implicit session =>
+      val joinQuery: Query[(Column[Int], Column[String]), (Int, String), Seq] = for {
+        uw <- usedWord if uw.word.length > 3
+        g <- uw.game if g.id > 1
+      } yield (g.id, uw.word)
+      writePretty(joinQuery.list.map(e => Pair(e._1, e._2)))
     }
   }
 }

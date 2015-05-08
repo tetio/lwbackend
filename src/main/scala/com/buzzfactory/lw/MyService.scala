@@ -24,9 +24,16 @@ class MyServiceActor extends Actor with MyService {
 trait MyService extends HttpService {
 
   def getJson(route: Route) = get {
-    respondWithMediaType(MediaTypes.`application/json`) { route }
+    respondWithMediaType(MediaTypes.`application/json`) {
+      route
+    }
   }
 
+  def postJson(route: Route) = post {
+    respondWithMediaType(MediaTypes.`application/json`) {
+      route
+    }
+  }
 
   lazy val wordRoute = {
     getJson {
@@ -41,31 +48,48 @@ trait MyService extends HttpService {
 
   lazy val gameRoute =
     getJson {
-      path("game" / "all" ) {
+      path("game" / "all") {
         complete {
           GameHandler.findAllGames()
         }
       }
     } ~
-    getJson {
-      path("game" / IntNumber / "usedwords") { index =>
-        complete {
-          GameHandler.findUsedWords(index)
+      getJson {
+        path("game" / "all2") {
+          complete {
+            GameHandler.findAll2()
+          }
+        }
+      } ~
+      getJson {
+        path("game" / IntNumber) { index =>
+          complete {
+            GameHandler.findById(index)
+          }
+        }
+      } ~
+      postJson {
+        path("game") {
+          complete {
+            GameHandler.newGame()
+          }
         }
       }
-    }
-
-
 
 
   lazy val myRoute =
     path("") {
       get {
-        respondWithMediaType(`text/html`) { // XML is marshalled to `text/xml` by default, so we simply override here
+        respondWithMediaType(`text/html`) {
+          // XML is marshalled to `text/xml` by default, so we simply override here
           complete {
             <html>
               <body>
-                <h1>Say hello to <i>spray-routing</i> on <i>spray-can</i>!</h1>
+                <h1>Say hello to
+                  <i>spray-routing</i>
+                  on
+                  <i>spray-can</i>
+                  !</h1>
               </body>
             </html>
           }

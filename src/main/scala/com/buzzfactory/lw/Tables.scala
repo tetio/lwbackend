@@ -9,18 +9,24 @@ import scala.slick.lifted.{ProvenShape, ForeignKeyQuery}
  * Created by tetio on 30/04/15.
  */
 
-class Games(tag: Tag) extends Table[Game](tag, "GAMES") {
-  def id = column[Int]("ID", O.PrimaryKey)
-  def doc = column[Timestamp]("DOC", O.NotNull)
-  def state = column[String]("STATE", O.NotNull)
+class Games(tag: Tag) extends Table[Game](tag, "games") {
+  def id = column[Int]("id", O.PrimaryKey, O.AutoInc)
+  def doc = column[Timestamp]("doc", O.NotNull)
+  def state = column[String]("state",O.NotNull)
 
-  def * = (id, doc, state) <> (Game.tupled, Game.unapply)
+  def create = (id: Int, doc: Timestamp, state: String) =>
+    Game(id, doc, state, Nil, Nil)
+
+  def destroy = (game: Game) =>
+    Some((game.id, game.doc, game.state))
+
+  def * = (id, doc, state) <> (create.tupled, destroy)
 
 }
 
-class UsedWords(tag: Tag) extends Table[UsedWord](tag, "USED_WORDS") {
-  def word = column[String]("ID", O.PrimaryKey)
-  def gameId = column[Int]("GAME_ID")
+class UsedWords(tag: Tag) extends Table[UsedWord](tag, "used_words") {
+  def word = column[String]("id", O.PrimaryKey)
+  def gameId = column[Int]("game_id")
 
   def * = (word, gameId) <> (UsedWord.tupled, UsedWord.unapply)
 
@@ -29,10 +35,10 @@ class UsedWords(tag: Tag) extends Table[UsedWord](tag, "USED_WORDS") {
 }
 
 
-class Players(tag: Tag) extends Table[Player](tag, "PLAYERS") {
-  def id = column[Int]("ID", O.PrimaryKey)
-  def username = column[String]("USERNAME", O.NotNull)
-  def gameId = column[Int]("GAME_ID")
+class Players(tag: Tag) extends Table[Player](tag, "players") {
+  def id = column[Int]("id", O.PrimaryKey, O.AutoInc)
+  def username = column[String]("username", O.NotNull)
+  def gameId = column[Int]("game_id")
 
   def * = (id, username, gameId) <> (Player.tupled, Player.unapply)
 
@@ -41,13 +47,26 @@ class Players(tag: Tag) extends Table[Player](tag, "PLAYERS") {
 }
 
 
-class Rounds(tag: Tag) extends Table[Round](tag, "ROUNDS") {
-  def id = column[Int]("ID", O.PrimaryKey)
-  def word = column[String]("WORD", O.NotNull)
-  def playerId = column[Int]("PLAYER_ID")
+class Rounds(tag: Tag) extends Table[Round](tag, "rounds") {
+  def id = column[Int]("id", O.PrimaryKey)
+  def word = column[String]("word", O.NotNull)
+  def playerId = column[Int]("player_id")
 
   def * = (id, word, playerId) <> (Round.tupled, Round.unapply)
 
   def player: ForeignKeyQuery[Players, Player] =
     foreignKey("ROU_PLA_FK", playerId, TableQuery[Players])(_.id)
+}
+
+
+class Words(tag: Tag) extends Table[Word](tag, "words") {
+  def word = column[String]("word", O.PrimaryKey)
+
+  def * = (word) <> (Word, Word.unapply)
+}
+
+class Words16(tag: Tag) extends Table[Word](tag, "words16") {
+  def word = column[String]("word", O.PrimaryKey)
+
+  def * = (word) <> (Word, Word.unapply)
 }
