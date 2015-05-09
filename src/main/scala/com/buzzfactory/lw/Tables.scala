@@ -14,13 +14,13 @@ class Games(tag: Tag) extends Table[Game](tag, "games") {
   def doc = column[Timestamp]("doc", O.NotNull)
   def state = column[String]("state",O.NotNull)
 
-  def create = (id: Option[Int], doc: Timestamp, state: String) =>
+  def mapRow = (id: Option[Int], doc: Timestamp, state: String) =>
     Game(id, doc, state, Nil, Nil, Nil)
 
-  def destroy = (game: Game) =>
+  def unMapRow = (game: Game) =>
     Some((game.id, game.doc, game.state))
 
-  def * = (id.?, doc, state) <> (create.tupled, destroy)
+  def * = (id.?, doc, state) <> (mapRow.tupled, unMapRow)
 
 }
 
