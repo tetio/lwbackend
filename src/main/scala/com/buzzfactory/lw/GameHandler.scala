@@ -33,12 +33,14 @@ object GameHandler {
       val countQuery = 874
       val w16Idx = Random.nextInt(countQuery)
       val word = word16.drop(w16Idx).take(1).run.head.word
-      val g = Game(None, new Timestamp(System.currentTimeMillis()), "OPEN", Nil,  Nil, Nil)
+      val letters = word.split("")
+      val shuffled = Random.shuffle(word.toList)
+      val g = Game(None, new Timestamp(System.currentTimeMillis()), "OPEN", shuffled.mkString, Nil,  Nil, Nil)
       val gameId = (game returning game.map(_.id))  += g
       //val g = game.filter(_.id === gameId).run.head
-      val letters = word.split("")
+
       //s"{res: $gameId}"
-      val theGame = Game(Some(gameId), g.doc, g.state, Random.shuffle(letters), Nil, Nil)
+      val theGame = Game(Some(gameId), g.doc, g.state, "", shuffled.map(e=>e.toString), Nil, Nil)
       writePretty(theGame)
     }
   }
@@ -57,7 +59,7 @@ object GameHandler {
       val gameQuery = game.filter(_.id === id)
       val usedWordsQuery: Query[UsedWords, UsedWord, Seq] = usedWord.filter(_.gameId === id)
       val myGame = gameQuery.run.head
-      val megaGame = Game(myGame.id, myGame.doc, myGame.state, Nil, Nil, usedWordsQuery.run.map(_.word))
+      val megaGame = Game(myGame.id, myGame.doc, myGame.state, "", Random.shuffle(myGame.word.split("")), Nil, usedWordsQuery.run.map(_.word))
       writePretty(megaGame )
     }
   }

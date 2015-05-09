@@ -13,14 +13,15 @@ class Games(tag: Tag) extends Table[Game](tag, "games") {
   def id = column[Int]("id", O.PrimaryKey, O.AutoInc)
   def doc = column[Timestamp]("doc", O.NotNull)
   def state = column[String]("state",O.NotNull)
+  def word = column[String]("word",O.NotNull)
 
-  def mapRow = (id: Option[Int], doc: Timestamp, state: String) =>
-    Game(id, doc, state, Nil, Nil, Nil)
+  def mapRow = (id: Option[Int], doc: Timestamp, state: String, word: String) =>
+    Game(id, doc, state, word, Nil, Nil, Nil)
 
   def unMapRow = (game: Game) =>
-    Some((game.id, game.doc, game.state))
+    Some((game.id, game.doc, game.state, game.word))
 
-  def * = (id.?, doc, state) <> (mapRow.tupled, unMapRow)
+  def * = (id.?, doc, state, word) <> (mapRow.tupled, unMapRow)
 
 }
 
