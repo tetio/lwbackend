@@ -30,11 +30,15 @@ object GameHandler {
   def newGame() = {
     db.withSession { implicit session =>
       val countQuery = word16.length.run
-      val skip = Random.nextInt(countQuery)
-      val word = word16.drop(skip).take(1).run.head
-      var myGame = Game(1, new Timestamp(System.currentTimeMillis()), "OPEN", Nil, Nil)
-      val res = game.insert(myGame)
-      s"{res: $res}"
+      val choosenIdx = Random.nextInt(countQuery)
+      val word = word16.drop(choosenIdx).take(1).run.head.word
+      var g = Game(None, new Timestamp(System.currentTimeMillis()), "OPEN", Nil,  Nil, Nil)
+      val id = (game returning game.map(_.id))  += g
+      val myGame = game.filter(_.id === id).run.head
+      val letters = word.split("")
+      //s"{res: $gameId}"
+      val theGame = Game(myGame.id, myGame.doc, myGame.state, Random.shuffle(letters), Nil, Nil)
+      writePretty(theGame)
     }
   }
 
@@ -52,7 +56,7 @@ object GameHandler {
       val gameQuery = game.filter(_.id === id)
       val usedWordsQuery: Query[UsedWords, UsedWord, Seq] = usedWord.filter(_.gameId === id)
       val myGame = gameQuery.run.head
-      val megaGame = Game(myGame.id, myGame.doc, myGame.state, Nil, usedWordsQuery.run.map(_.word))
+      val megaGame = Game(myGame.id, myGame.doc, myGame.state, Nil, Nil, usedWordsQuery.run.map(_.word))
       writePretty(megaGame )
     }
   }
