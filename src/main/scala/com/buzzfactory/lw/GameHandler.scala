@@ -29,17 +29,14 @@ object GameHandler {
 
   def newGame() = {
     db.withSession { implicit session =>
-//      val countQuery = word16.length.run
-      val countQuery = 874
+      val countQuery = word16.length.run
+//      val countQuery = 874
       val w16Idx = Random.nextInt(countQuery)
       val word = word16.drop(w16Idx).take(1).run.head.word
       val letters = word.split("")
       val shuffled = Random.shuffle(word.toList)
       val g = Game(None, new Timestamp(System.currentTimeMillis()), "OPEN", shuffled.mkString, Nil,  Nil, Nil)
       val gameId = (game returning game.map(_.id))  += g
-      //val g = game.filter(_.id === gameId).run.head
-
-      //s"{res: $gameId}"
       val theGame = Game(Some(gameId), g.doc, g.state, "", shuffled.map(e=>e.toString), Nil, Nil)
       writePretty(theGame)
     }
