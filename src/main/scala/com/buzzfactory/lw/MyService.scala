@@ -35,18 +35,32 @@ trait MyService extends HttpService {
     }
   }
 
-  lazy val wordRoute = {
-    getJson {
-      path("lw" / "init") {
-        complete {
-          GameHandler.findById2(0)
-        }
-      }
+  def putJson(route: Route) = put {
+    respondWithMediaType(MediaTypes.`application/json`) {
+      route
     }
   }
 
+  lazy val wordRoute = {
+    getJson {
+      path("validateWord" / RestPath) { word =>
+        complete {
+          WordHandler.validate(word.toString)
+        }
+      }
+    } ~
+    getJson {
+      path("word" / RestPath) { word =>
+        complete {
+          WordHandler.findWord(word.toString)
+        }
+      }
+    }
 
-  lazy val gameRoute =
+  }
+
+
+  lazy val gameRoute = {
     getJson {
       path("game" / "all") {
         complete {
@@ -54,30 +68,36 @@ trait MyService extends HttpService {
         }
       }
     } ~
-      getJson {
-        path("game" / "all2") {
-          complete {
-            GameHandler.findAll2()
-          }
+    getJson {
+      path("game" / "all2") {
+        complete {
+          GameHandler.findAll2()
         }
-      } ~
-      getJson {
-        path("game" / IntNumber) { index =>
-          complete {
-            GameHandler.findById(index)
-          }
+      }
+    } ~
+    getJson {
+      path("game" / IntNumber) { index =>
+        complete {
+          GameHandler.findById(index)
         }
-      } ~
-      postJson {
-        path("game") {
+      }
+    } ~
+    putJson {
+      path("game") {
+        formFields("username", "numplayers".as[Int], "language"?) { (username, numPlayers, language) =>
           complete {
-            GameHandler.newGame()
+            GameHandler.newGame(username, numPlayers, language.getOrElse("CA"))
           }
         }
       }
+    }
+  }
 
 
-  lazy val myRoute =
+
+
+
+  lazy val myRoute = {
     path("") {
       get {
         respondWithMediaType(`text/html`) {
@@ -95,8 +115,15 @@ trait MyService extends HttpService {
           }
         }
       }
+    } ~
+    getJson {
+      path("lw" / "init") {
+        complete {
+          GameHandler.findById2(0)
+        }
+      }
     }
-
+  }
 
   val lwRoutes = wordRoute ~ gameRoute ~ myRoute
 

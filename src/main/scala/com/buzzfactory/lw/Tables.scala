@@ -12,16 +12,18 @@ import scala.slick.lifted.{ProvenShape, ForeignKeyQuery}
 class Games(tag: Tag) extends Table[Game](tag, "games") {
   def id = column[Int]("id", O.PrimaryKey, O.AutoInc)
   def doc = column[Timestamp]("doc", O.NotNull)
-  def state = column[String]("state",O.NotNull)
-  def word = column[String]("word",O.NotNull)
+  def numPlayers = column[Int]("num_players", O.NotNull)
+  def language = column[String]("language", O.NotNull)
+  def state = column[String]("state", O.NotNull)
+  def word = column[String]("word", O.NotNull)
 
-  def mapRow = (id: Option[Int], doc: Timestamp, state: String, word: String) =>
-    Game(id, doc, state, word, Nil, Nil, Nil)
+  def mapRow = (id: Option[Int], doc: Timestamp, numPlayers: Int, language: String, state: String, word: String) =>
+    Game(id, doc, numPlayers, language, state, word, Nil, Nil, Nil)
 
   def unMapRow = (game: Game) =>
-    Some((game.id, game.doc, game.state, game.word))
+    Some((game.id, game.doc, game.numPlayers, game.language, game.state, game.word))
 
-  def * = (id.?, doc, state, word) <> (mapRow.tupled, unMapRow)
+  def * = (id.?, doc, numPlayers, language, state, word) <> (mapRow.tupled, unMapRow)
 
 }
 
@@ -41,7 +43,7 @@ class Players(tag: Tag) extends Table[Player](tag, "players") {
   def username = column[String]("username", O.NotNull)
   def gameId = column[Int]("game_id")
 
-  def * = (id, username, gameId) <> (Player.tupled, Player.unapply)
+  def * = (id.?, username, gameId) <> (Player.tupled, Player.unapply)
 
   def game: ForeignKeyQuery[Games, Game] =
     foreignKey("PLA_GAM_FK", gameId, TableQuery[Games])(_.id)
